@@ -1,0 +1,7 @@
+[server]
+server: helm.mrozekma.com
+exchange: helm
+
+[host]
+username: foo
+password: bar
