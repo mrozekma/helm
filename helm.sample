@@ -5,3 +5,4 @@ exchange: helm
 [host]
 username: foo
 password: bar
+log: /tmp/helm.log
