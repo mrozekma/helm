@@ -15,7 +15,7 @@ def initCLI():
 	parser.add_argument('-c', '--conf', help = 'Configuration file', dest = 'conf', default = FILENAME)
 	parser.add_argument('-n', '--no-detach', help = 'Stay in foreground', action = 'store_false', dest = 'daemon', default = True)
 	parser.add_argument('--pidfile', help = 'Write PID to this file', dest = 'pidfile', default = None)
-	parser.add_argument('--test', action = 'store_true', dest = 'test', default = False)
+	parser.add_argument('--send', help = 'Send a helm message', nargs = '+', dest = 'send', default = None)
 	args = parser.parse_args()
 	initModule(args.conf)
 	return args

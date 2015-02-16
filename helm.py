@@ -1,5 +1,7 @@
 #!/usr/bin/python
+from json import loads as fromJS
 import os
+import re
 
 from Backend import Backend
 from Config import initCLI as initConfig, get as getConfig, has as hasConfig
@@ -15,13 +17,26 @@ backend = Backend(
 )
 
 if __name__ == '__main__':
-	if args.test:
-		backend.send({'foo': 'bar'})
+	if args.send:
+		pattern = re.compile('([a-zA-Z_][a-zA-Z0-9_]*): ?(.*)')
+		try:
+			message = {}
+			for param in args.send:
+				match = pattern.match(param)
+				if not match:
+					raise ValueError
+				k, v = match.groups()
+				message[k] = fromJS(v) # Can raise ValueError
+		except ValueError, e:
+			print "Unable to send: invalid message format"
+			exit(1)
+		backend.send(message)
+		print "Message broadcast"
 		exit(0)
-	else:
-		def cb(data):
-			print "receive: %s" % data
-		backend.onReceive(cb)
+
+	def onReceive(data):
+		print data
+	backend.onReceive(onReceive)
 
 	if args.daemon:
 		if hasConfig('host', 'log'):
