@@ -2,6 +2,7 @@
 from json import loads as fromJS
 import os
 import re
+import time
 
 from Backend import Backend
 from Config import initCLI as initConfig, get as getConfig, has as hasConfig
@@ -10,10 +11,10 @@ if __name__ == '__main__':
 	args = initConfig()
 
 backend = Backend(
-	getConfig('server', 'server', 'helm.mrozekma.com'),
-	getConfig('server', 'exchange', 'helm'),
-	getConfig('host', 'username'),
-	getConfig('host', 'password')
+	getConfig('server', 'helm.mrozekma.com'),
+	getConfig('exchange', 'helm'),
+	getConfig('username'),
+	getConfig('password')
 )
 
 if __name__ == '__main__':
@@ -39,8 +40,8 @@ if __name__ == '__main__':
 	backend.onReceive(onReceive)
 
 	if args.daemon:
-		if hasConfig('host', 'log'):
-			logFile = getConfig('host', 'log')
+		if hasConfig('host', 'logfile'):
+			logFile = getConfig('logfile')
 		elif os.access('/var/log/helm', os.W_OK):
 			logFile = '/var/log/helm/helm.log'
 		elif os.access('/tmp', os.W_OK):
@@ -65,9 +66,10 @@ if __name__ == '__main__':
 			os.dup2(log, 1)
 			os.dup2(log, 2)
 
-	pidfile = args.pidfile or getConfig('host', 'pidfile', None)
+	pidfile = args.pidfile or getConfig('pidfile', None)
 	if pidfile is not None:
 		with open(pidFile, 'w') as f:
 			f.write("%d\n" % os.getpid())
 
-	while True: pass
+	while True:
+		time.sleep(1)

@@ -1,13 +1,37 @@
 import argparse
 from os.path import expanduser
-from ConfigParser import ConfigParser, NoSectionError, NoOptionError
+import re
 
 FILENAME = expanduser('~/.helm')
+CONFIG_DIRECTIVES = map(re.compile, [
+	'Server (?P<server>[^ ]+)',
+	'Server (?P<server>[^ ]+) (?P<exchange>[^ ]+)',
+	'(?:Auth|Authentication|Credentials) (?P<username>[^ ]+) (?P<password>.+)',
+	'LogFile (?P<logfile>.+)',
+	'PidFile (?P<pidfile>.+)',
+])
 
-config = ConfigParser()
+# Default values
+config = {
+	'server': 'helm.mrozekma.com',
+	'exchange': 'helm',
+	# 'username': None,
+	# 'password': None,
+	# 'logfile': None,
+	# 'pidfile': None,
+}
+
 def initModule(filename = FILENAME):
 	"""Called when helm is imported by another python script"""
-	config.read([filename])
+	with open(filename) as f:
+		for line in f:
+			for pattern in CONFIG_DIRECTIVES:
+				match = pattern.match(line)
+				if match:
+					config.update(match.groupdict())
+					break
+			else:
+				print "Unrecognized configuration directive: %s" % line
 
 def initCLI():
 	"""Called when running helm.py from the command-line"""
@@ -20,19 +44,14 @@ def initCLI():
 	initModule(args.conf)
 	return args
 
-NO_DEFAULT = object()
-def get(section, option, default = NO_DEFAULT):
-	if config is None:
-		parseConfig()
-	try:
-		return config.get(section, option)
-	except (NoSectionError, NoOptionError):
-		if default is NO_DEFAULT:
-			raise
-		else:
-			return default
+def has(option):
+	return option in config
 
-def has(section, option):
-	if config is None:
-		parseConfig()
-	return config.has_option(section, option)
+NO_DEFAULT = object()
+def get(option, default = NO_DEFAULT):
+	if has(option):
+		return config[option]
+	elif default is not NO_DEFAULT:
+		return default
+	else:
+		raise ValueError("No configuration entry: %s" % option)
