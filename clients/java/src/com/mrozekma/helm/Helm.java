@@ -9,7 +9,6 @@ import java.lang.reflect.Type;
 import java.util.Map;
 
 public class Helm {
-	private final Config config;
 	private String exchange;
 	private final Connection conn;
 	private final Channel chan;
@@ -18,13 +17,21 @@ public class Helm {
 	private final Gson gson = new Gson();
 
 	public Helm() {
-		this.config = new Config();
-		this.exchange = this.config.get("exchange", "helm");
+		this(new Config());
+	}
+
+	// WHY, JAVA?! Separate constructor so we can have a config object to use with this()
+	private Helm(Config config) {
+		this(config.get("server", "helm.mrozekma.com"), config.get("exchange", "helm"), config.get("username"), config.get("password"));
+	}
+
+	public Helm(String host, String exchange, String username, String password) {
+		this.exchange = exchange;
 
 		final ConnectionFactory factory = new ConnectionFactory();
-		factory.setHost(this.config.get("server", "helm.mrozekma.com"));
-		factory.setUsername(this.config.get("username"));
-		factory.setPassword(this.config.get("password"));
+		factory.setHost(host);
+		factory.setUsername(username);
+		factory.setPassword(password);
 
 		try {
 			this.conn = factory.newConnection();
