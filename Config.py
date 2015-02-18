@@ -7,6 +7,8 @@ from Action import Action
 
 FILENAME = expanduser('~/.helm')
 CONFIG_DIRECTIVES = map(re.compile, [
+	'^$', # Skip blank lines
+	'#.*', # Skip comments
 	'Server (?P<server>[^ ]+)',
 	'Server (?P<server>[^ ]+) (?P<exchange>[^ ]+)',
 	'(?:Auth|Authentication|Credentials) (?P<username>[^ ]+) (?P<password>.+)',
