@@ -5,7 +5,7 @@ import re
 import time
 
 from Backend import Backend
-from Config import initCLI as initConfig, get as getConfig, has as hasConfig
+from Config import initCLI as initConfig, get as getConfig, has as hasConfig, actions
 
 if __name__ == '__main__':
 	args = initConfig()
@@ -35,8 +35,9 @@ if __name__ == '__main__':
 		print "Message broadcast"
 		exit(0)
 
-	def onReceive(data):
-		print data
+	def onReceive(message):
+		print message
+		map(lambda action: action.apply(message), actions)
 	backend.onReceive(onReceive)
 
 	if args.daemon:

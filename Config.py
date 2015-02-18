@@ -1,6 +1,9 @@
 import argparse
 from os.path import expanduser
 import re
+from string import Template
+
+from Action import Action
 
 FILENAME = expanduser('~/.helm')
 CONFIG_DIRECTIVES = map(re.compile, [
@@ -10,6 +13,7 @@ CONFIG_DIRECTIVES = map(re.compile, [
 	'LogFile (?P<logfile>.+)',
 	'PidFile (?P<pidfile>.+)',
 ])
+ACTION_FILTER = re.compile('\(([^ :()]+)(?: ?:= ?([^)]+))?\) *(.*)$')
 
 # Default values
 config = {
@@ -20,11 +24,26 @@ config = {
 	# 'logfile': None,
 	# 'pidfile': None,
 }
+actions = []
 
 def initModule(filename = FILENAME):
 	"""Called when helm is imported by another python script"""
 	with open(filename) as f:
 		for line in f:
+			# Special-case actions
+			if line.startswith('Action '):
+				line = line[len('Action '):]
+				act = Action(None)
+				while line != '':
+					match = ACTION_FILTER.match(line)
+					if match:
+						key, value, line = match.groups()
+						act.filter(key, True if value is None else value)
+					else:
+						break
+				act.cmd = line
+				actions.append(act)
+				continue
 			for pattern in CONFIG_DIRECTIVES:
 				match = pattern.match(line)
 				if match:
