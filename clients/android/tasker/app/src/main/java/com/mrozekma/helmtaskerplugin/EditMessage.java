@@ -2,6 +2,7 @@ package com.mrozekma.helmtaskerplugin;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.widget.EditText;
 
@@ -19,22 +20,29 @@ public class EditMessage extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 
+		final SharedPreferences prefs = this.getPreferences(MODE_PRIVATE);
 		final Intent intent = this.getIntent();
-		if(intent != null) {
-			for(int i = 0; i < IDS.length; i++) {
-				final String value = intent.getStringExtra(KEYS[i]);
-				if(value != null) {
-					((EditText) this.findViewById(IDS[i])).setText(value);
-				}
+		for(int i = 0; i < IDS.length; i++) {
+			String value = (intent == null) ? null : intent.getStringExtra(KEYS[i]);
+			if(value == null && IDS[i] != R.id.message) {
+				value = prefs.getString(KEYS[i], null);
+			}
+			if(value != null) {
+				((EditText) this.findViewById(IDS[i])).setText(value);
 			}
 		}
 	}
 
 	@Override
 	public void finish() {
+		final SharedPreferences prefs = this.getPreferences(MODE_PRIVATE);
 		final Bundle bundle = new Bundle();
 		for(int i = 0; i < IDS.length; i++) {
-			bundle.putString(KEYS[i], ((EditText)this.findViewById(IDS[i])).getText().toString());
+			final String value = ((EditText)this.findViewById(IDS[i])).getText().toString();
+			bundle.putString(KEYS[i], value);
+			if(!value.isEmpty()) {
+				prefs.edit().putString(KEYS[i], value).commit();
+			}
 		}
 
 		final Intent intent = new Intent();
