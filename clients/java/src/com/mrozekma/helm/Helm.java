@@ -48,6 +48,11 @@ public class Helm {
 		this.conn.close();
 	}
 
+	public void send(String data) {
+		// Convert both ways to make sure 'data' is valid JSON
+		this.send((Map<String, String>)this.gson.fromJson(data, MESSAGE_TYPE));
+	}
+
 	public void send(Map<String, String> data) {
 		try {
 			final String message = this.gson.toJson(data, MESSAGE_TYPE);
@@ -67,7 +72,7 @@ public class Helm {
 			this.chan.basicConsume(queue, false, new DefaultConsumer(this.chan) {
 				@Override
 				public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) throws IOException {
-					final Map<String, String> message = (Map<String, String>) Helm.this.gson.fromJson(new String(body), MESSAGE_TYPE);
+					final Map<String, String> message = (Map<String, String>)Helm.this.gson.fromJson(new String(body), MESSAGE_TYPE);
 					if(cb.onReceive(message)) {
 						Helm.this.chan.basicAck(envelope.getDeliveryTag(), false);
 					}
