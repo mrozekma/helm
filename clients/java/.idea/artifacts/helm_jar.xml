@@ -1,0 +1,13 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="helm:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/helm_jar</output-path>
+    <root id="archive" name="helm.jar">
+      <element id="module-output" name="java" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/lib/commons-cli-1.1.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/lib/commons-io-1.2.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/lib/junit.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/lib/gson-2.2.2.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/lib/rabbitmq-client.jar" path-in-jar="/" />
+    </root>
+  </artifact>
+</component>

@@ -2,6 +2,7 @@ package com.mrozekma.helm;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
@@ -11,20 +12,29 @@ import java.util.regex.Pattern;
 import static com.mrozekma.helm.Utils.*;
 
 class Config {
+	private static final class Directive {
+		public final Pattern pattern;
+		public String[] groups;
+		public Directive(Pattern pattern, String[] groups) {
+			this.pattern = pattern;
+			this.groups = groups;
+		}
+	}
+
 	private static final String FILENAME = "~/.helm";
-	private static final Pattern[] CONFIG_DIRECTIVES;
+	private static final Directive[] CONFIG_DIRECTIVES;
 
 	static {
-		final String[] patterns = {
-				"Server (?<server>[^ ]+)",
-				"Server (?<server>[^ ]+) (?<exchange>[^ ]+)",
-				"(?:Auth|Authentication|Credentials) (?<username>[^ ]+) (?<password>.+)",
-				"LogFile (?<logfile>.+)",
-				"PidFile (?<pidfile>.+)",
+		final String[][] patterns = {
+				{"Server ([^ ]+)", "server"},
+				{"Server ([^ ]+) ([^ ]+)", "server", "exchange"},
+				{"(?:Auth|Authentication|Credentials) ([^ ]+) (.+)", "username", "password"},
+				{"LogFile (.+)", "logfile"},
+				{"PidFile (.+)", "pidfile"},
 		};
-		CONFIG_DIRECTIVES = new Pattern[patterns.length];
+		CONFIG_DIRECTIVES = new Directive[patterns.length];
 		for(int i = 0; i < CONFIG_DIRECTIVES.length; i++) {
-			CONFIG_DIRECTIVES[i] = Pattern.compile(patterns[i]);
+			CONFIG_DIRECTIVES[i] = new Directive(Pattern.compile(patterns[i][0]), Arrays.copyOfRange(patterns[i], 1, patterns[i].length));
 		}
 	}
 
@@ -45,13 +55,14 @@ class Config {
 			while(s.hasNextLine()) {
 				final String line = s.nextLine();
 				boolean matched = false;
-				for(Pattern pattern : CONFIG_DIRECTIVES) {
-					final Matcher match = pattern.matcher(line);
+				for(Directive directive : CONFIG_DIRECTIVES) {
+					final Matcher match = directive.pattern.matcher(line);
 					if(match.matches()) {
 						matched = true;
 						try {
-							for(String k : getNamedGroups(pattern).keySet()) {
-								this.config.put(k, match.group(k));
+							assert match.groupCount() == directive.groups.length;
+							for(int i = 0; i < directive.groups.length; i++) {
+								this.config.put(directive.groups[i], match.group(i));
 							}
 						} catch(Exception e) {
 							throw new HelmException("Unable to parse configuration directive", e);
