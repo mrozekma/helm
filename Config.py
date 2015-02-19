@@ -15,7 +15,7 @@ CONFIG_DIRECTIVES = map(re.compile, [
 	'LogFile (?P<logfile>.+)',
 	'PidFile (?P<pidfile>.+)',
 ])
-ACTION_FILTER = re.compile('\(([^ :()]+)(?: ?:= ?([^)]+))?\) *(.*)$')
+ACTION_FILTER = re.compile('\(([^ :()]+)(?: ?(:=|!=|\|=) ?([^)]+))?\) *(.*)$')
 
 # Default values
 config = {
@@ -36,15 +36,19 @@ def initModule(filename = FILENAME):
 				# Special-case actions
 				if line.startswith('Action '):
 					line = line[len('Action '):]
-					act = Action(None)
+					act = Action()
 					while line != '':
 						match = ACTION_FILTER.match(line)
 						if match:
-							key, value, line = match.groups()
-							act.filter(key, True if value is None else value)
+							key, comparator, value, line = match.groups()
+							act.filter(key, True if value is None else value, comparator)
 						else:
 							break
-					act.cmd = line
+					if line.startswith('->'): # Trigger a message
+						line = line[2:].lstrip(' ')
+						act.message = line
+					else: # Execute a command
+						act.cmd = line
 					actions.append(act)
 					continue
 				for pattern in CONFIG_DIRECTIVES:

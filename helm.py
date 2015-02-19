@@ -36,8 +36,8 @@ if __name__ == '__main__':
 		exit(0)
 
 	def onReceive(message):
-		print message
-		map(lambda action: action.apply(message), actions)
+		print "Received: %s" % message
+		map(lambda action: action.apply(backend, message), actions)
 	backend.onReceive(onReceive)
 
 	if args.daemon:
