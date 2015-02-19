@@ -47,6 +47,9 @@ def initModule(filename = FILENAME):
 					if line.startswith('->'): # Trigger a message
 						line = line[2:].lstrip(' ')
 						act.message = line
+					elif line.startswith('<-'): # Import a script
+						line = line[2:].lstrip(' ')
+						act.module = line
 					else: # Execute a command
 						act.cmd = line
 					actions.append(act)
