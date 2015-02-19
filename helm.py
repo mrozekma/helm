@@ -41,7 +41,7 @@ if __name__ == '__main__':
 	backend.onReceive(onReceive)
 
 	if args.daemon:
-		if hasConfig('host', 'logfile'):
+		if hasConfig('logfile'):
 			logFile = getConfig('logfile')
 		elif os.access('/var/log/helm', os.W_OK):
 			logFile = '/var/log/helm/helm.log'
@@ -67,8 +67,8 @@ if __name__ == '__main__':
 			os.dup2(log, 1)
 			os.dup2(log, 2)
 
-	pidfile = args.pidfile or getConfig('pidfile', None)
-	if pidfile is not None:
+	pidFile = args.pidfile or getConfig('pidfile', None)
+	if pidFile is not None:
 		with open(pidFile, 'w') as f:
 			f.write("%d\n" % os.getpid())
 

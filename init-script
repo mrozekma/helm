@@ -1,0 +1,17 @@
+#!/sbin/runscript
+
+depend() {
+	 use dns
+}
+
+start() {
+	ebegin "Starting helm"
+	start-stop-daemon -S -u mrozekma:mrozekma -x /home/mrozekma/helm/helm.py -p /var/run/helm/helm.pid -- --pidfile /var/run/helm/helm.pid
+	eend $?
+}
+
+stop() {
+       ebegin "Stopping helm"
+       start-stop-daemon -K -x /home/mrozekma/helm/helm.py -p /var/run/helm/helm.pid
+       eend $?
+}
