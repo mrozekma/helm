@@ -2,6 +2,7 @@
 from json import loads as fromJS
 import os
 import re
+import sys
 import time
 
 from Backend import Backend
@@ -38,7 +39,6 @@ if __name__ == '__main__':
 	def onReceive(message):
 		print "Received: %s" % message
 		map(lambda action: action.apply(backend, message), actions)
-	backend.onReceive(onReceive)
 
 	if args.daemon:
 		if hasConfig('logfile'):
@@ -62,15 +62,18 @@ if __name__ == '__main__':
 
 		# Point the standard file descriptors at a log file
 		if logFile is not None:
-			log = os.open(logFile, os.O_CREAT | os.O_RDWR)
-			os.dup2(log, 0)
-			os.dup2(log, 1)
-			os.dup2(log, 2)
+			log = file(logFile, 'a+', 0)
+			devNull = file('/dev/null', 'r')
+			os.dup2(devNull.fileno(), sys.stdin.fileno())
+			os.dup2(log.fileno(), sys.stdout.fileno())
+			os.dup2(log.fileno(), sys.stderr.fileno())
 
 	pidFile = args.pidfile or getConfig('pidfile', None)
 	if pidFile is not None:
 		with open(pidFile, 'w') as f:
 			f.write("%d\n" % os.getpid())
+
+	backend.onReceive(onReceive)
 
 	while True:
 		time.sleep(1)
