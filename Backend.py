@@ -31,6 +31,8 @@ class Backend:
 			self.conn.close()
 		except RuntimeError: # concurrent poll() invocation
 			pass
+		except TypeError:
+			pass
 
 	def send(self, data):
 		self.chan.basic_publish(exchange = self.exchange, routing_key = '', body = toJS(data))
