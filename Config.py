@@ -4,6 +4,8 @@ import re
 from string import Template
 
 from Action import Action
+from ParseConfig import Parser
+from Trigger import Trigger
 
 FILENAME = expanduser('~/.helm')
 CONFIG_DIRECTIVES = map(re.compile, [
@@ -26,41 +28,35 @@ config = {
 	# 'logfile': None,
 	# 'pidfile': None,
 }
-actions = []
+triggers = []
 
 def initModule(filename = FILENAME):
 	"""Called when helm is imported by another python script"""
 	try:
 		with open(filename) as f:
-			for line in f:
-				# Special-case actions
-				if line.startswith('Action '):
-					line = line[len('Action '):]
-					act = Action()
-					while line != '':
-						match = ACTION_FILTER.match(line)
-						if match:
-							key, comparator, value, line = match.groups()
-							act.filter(key, True if value is None else value, comparator)
-						else:
-							break
-					if line.startswith('->'): # Trigger a message
-						line = line[2:].lstrip(' ')
-						act.message = line
-					elif line.startswith('<-'): # Import a script
-						line = line[2:].lstrip(' ')
-						act.module = line
-					else: # Execute a command
-						act.cmd = line
-					actions.append(act)
-					continue
-				for pattern in CONFIG_DIRECTIVES:
-					match = pattern.match(line)
-					if match:
-						config.update(match.groupdict())
-						break
-				else:
-					print "Unrecognized configuration directive: %s" % line
+			parser = Parser(f.read())
+			while not parser.isDone():
+				directive = parser.consumeAny('server ', 'auth ', 'authentication ', 'credentials ', 'logfile ', 'pidfile ', 'trigger ')
+				if directive == 'server ':
+					config['server'] = parser.consumeWord()
+					parser.consumeEOL()
+				elif directive in ('auth ', 'authentication ', 'credentials '):
+					config['username'] = parser.consumeWord()
+					config['password'] = parser.consumeWord()
+					parser.consumeEOL()
+				elif directive == 'logfile ':
+					config['logfile'] = parser.consumeWord()
+					parser.consumeEOL()
+				elif directive == 'pidfile ':
+					config['pidfile'] == parser.consumeWord()
+					parser.consumeEOL()
+				elif directive == 'trigger ':
+					trigger = Trigger()
+					triggers.append(trigger)
+					while not parser.attempt('{'):
+						parser.consumeFilter(trigger)
+					while not parser.attempt('}'):
+						parser.consumeAction(trigger)
 		return True
 	except IOError:
 		return False

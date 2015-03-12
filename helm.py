@@ -6,7 +6,7 @@ import sys
 import time
 
 from Backend import Backend
-from Config import initCLI as initConfig, get as getConfig, has as hasConfig, actions
+from Config import initCLI as initConfig, get as getConfig, has as hasConfig, triggers
 
 if __name__ == '__main__':
 	args = initConfig()
@@ -38,7 +38,7 @@ if __name__ == '__main__':
 
 	def onReceive(message):
 		print "Received: %s" % message
-		map(lambda action: action.apply(backend, message), actions)
+		map(lambda trigger: trigger.apply(backend, message), triggers)
 
 	if args.daemon:
 		if hasConfig('logfile'):
