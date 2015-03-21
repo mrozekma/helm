@@ -1,12 +1,13 @@
 from subprocess import Popen
 
 class ExecAction:
-	def __init__(self, args):
+	def __init__(self, args, env):
 		self.args = args
+		self.env = env
 
 	def run(self, backend, message):
 		args = [fn(message) for fn in self.args]
-		Popen(args)
+		Popen(args, env = self.env)
 
 class FunctionAction:
 	def __init__(self, fn):
@@ -27,8 +28,8 @@ class Trigger:
 	def addFilter(self, key, eq, values):
 		self.filters.append((key, eq, values))
 
-	def addExec(self, args):
-		self.actions.append(ExecAction(args))
+	def addExec(self, args, env = None):
+		self.actions.append(ExecAction(args, env))
 
 	def addFunction(self, fn):
 		self.actions.append(FunctionAction(fn))

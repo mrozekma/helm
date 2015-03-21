@@ -1,3 +1,4 @@
+from json import loads as fromJS
 import re
 
 ws = re.compile('^([ \t]*)')
@@ -52,6 +53,13 @@ class Parser:
 			return m.group(1)
 		self.fail()
 
+	def consumeJSON(self):
+		self.consumeWhitespace()
+		rtn = self.consumeToEOL()
+		if rtn.endswith(';'):
+			rtn = rtn[:-1]
+		return rtn
+
 	def consumeWhitespace(self):
 		m = ws.match(self.here())
 		if m:
@@ -71,9 +79,12 @@ class Parser:
 	def consumeToEOL(self):
 		nl = self.data.find('\n', self.pos)
 		if nl == -1:
+			rtn = self.data[self.pos:]
 			self.pos = len(self.data)
 		else:
+			rtn = self.data[self.pos:nl]
 			self.pos = nl + 1
+		return rtn
 
 	def isDone(self):
 		self.consumeWhitespace()
@@ -152,8 +163,11 @@ class Parser:
 				else: # Literal
 					lit = self.consumeWord(False, True)
 					makeLambdaLit(lit)
+			env = None
+			if self.attempt('in'):
+				env = fromJS(self.consumeJSON())
 			self.attempt(';') # Optionally allow a semicolon at the end to match C
-			trigger.addExec(args)
+			trigger.addExec(args, env)
 		elif command == 'script ':
 			self.consume('(')
 			moduleName = self.consumeWord(noParen = True)
