@@ -124,7 +124,7 @@ class Parser:
 		trigger.addFilter(key, eq, values)
 
 	def consumeAction(self, trigger):
-		command = self.consumeAny('exec ')
+		command = self.consumeAny('exec ', 'script ')
 		if command == 'exec ':
 			self.consume('(')
 			args = []
@@ -152,4 +152,12 @@ class Parser:
 				else: # Literal
 					lit = self.consumeWord(False, True)
 					makeLambdaLit(lit)
+			self.attempt(';') # Optionally allow a semicolon at the end to match C
 			trigger.addExec(args)
+		elif command == 'script ':
+			self.consume('(')
+			moduleName = self.consumeWord(noParen = True)
+			self.consume(')')
+			self.attempt(';')
+			module = __import__("scripts.%s" % moduleName, globals(), locals(), 'trigger')
+			trigger.addFunction(module.trigger)

@@ -8,6 +8,14 @@ class ExecAction:
 		args = [fn(message) for fn in self.args]
 		Popen(args)
 
+class FunctionAction:
+	def __init__(self, fn):
+		self.fn = fn
+
+	def run(self, backend, message):
+		print message
+		self.fn(**message)
+
 class Trigger:
 	def __init__(self):
 		self.filters = []
@@ -22,10 +30,17 @@ class Trigger:
 	def addExec(self, args):
 		self.actions.append(ExecAction(args))
 
+	def addFunction(self, fn):
+		self.actions.append(FunctionAction(fn))
+
 	def apply(self, backend, message):
 		for key, eq, values in self.filters:
 			if eq != (key in message):
 				return
 			if values is not None and eq != (message[key] in values):
 				return
-		map(lambda action: action.run(backend, message), self.actions)
+		for action in self.actions:
+			try:
+				action.run(backend, message)
+			except Exception, e:
+				print e
