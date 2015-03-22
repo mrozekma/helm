@@ -1,4 +1,5 @@
 from subprocess import Popen
+import traceback
 
 class ExecAction:
 	def __init__(self, args, env):
@@ -17,6 +18,13 @@ class FunctionAction:
 		print message
 		self.fn(**message)
 
+class SendAction:
+	def __init__(self, message):
+		self.message = message
+
+	def run(self, backend, message):
+		backend.send(self.message)
+
 class Trigger:
 	def __init__(self):
 		self.filters = []
@@ -34,6 +42,9 @@ class Trigger:
 	def addFunction(self, fn):
 		self.actions.append(FunctionAction(fn))
 
+	def addSend(self, message):
+		self.actions.append(SendAction(message))
+
 	def apply(self, backend, message):
 		for key, eq, values in self.filters:
 			if eq != (key in message):
@@ -43,5 +54,5 @@ class Trigger:
 		for action in self.actions:
 			try:
 				action.run(backend, message)
-			except Exception, e:
-				print e
+			except Exception:
+				traceback.print_exc()

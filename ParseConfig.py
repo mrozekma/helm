@@ -135,7 +135,7 @@ class Parser:
 		trigger.addFilter(key, eq, values)
 
 	def consumeAction(self, trigger):
-		command = self.consumeAny('exec ', 'script ')
+		command = self.consumeAny('exec ', 'script ', 'send ')
 		if command == 'exec ':
 			self.consume('(')
 			args = []
@@ -175,3 +175,6 @@ class Parser:
 			self.attempt(';')
 			module = __import__("scripts.%s" % moduleName, globals(), locals(), 'trigger')
 			trigger.addFunction(module.trigger)
+		elif command == 'send ':
+			message = self.consumeJSON()
+			trigger.addSend(fromJS(message))
