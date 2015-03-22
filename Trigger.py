@@ -16,7 +16,7 @@ class FunctionAction:
 
 	def run(self, backend, message):
 		print message
-		self.fn(**message)
+		self.fn(backend, **message)
 
 class SendAction:
 	def __init__(self, message):
