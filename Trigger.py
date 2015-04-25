@@ -8,7 +8,7 @@ class ExecAction:
 
 	def run(self, backend, message):
 		args = [fn(message) for fn in self.args]
-		Popen(args, env = self.env)
+		Popen(args, env = self.env).wait()
 
 class FunctionAction:
 	def __init__(self, fn):
