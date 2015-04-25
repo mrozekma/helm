@@ -3,7 +3,6 @@ from os.path import expanduser
 import re
 from string import Template
 
-from Action import Action
 from ParseConfig import Parser
 from Trigger import Trigger
 
@@ -17,7 +16,6 @@ CONFIG_DIRECTIVES = map(re.compile, [
 	'LogFile (?P<logfile>.+)',
 	'PidFile (?P<pidfile>.+)',
 ])
-ACTION_FILTER = re.compile('\(([^ :()]+)(?: ?(:=|!=|\|=) ?([^)]+))?\) *(.*)$')
 
 # Default values
 config = {
