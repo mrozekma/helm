@@ -6,6 +6,8 @@ depend() {
 
 start() {
 	ebegin "Starting helm"
+	[ -e /var/run/helm ] || mkdir /var/run/helm
+	chown -R mrozekma:mrozekma /var/run/helm
 	start-stop-daemon -S -u mrozekma:mrozekma -x /home/mrozekma/helm/helm.py -p /var/run/helm/helm.pid -- --pidfile /var/run/helm/helm.pid
 	eend $?
 }
