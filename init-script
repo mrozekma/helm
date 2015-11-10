@@ -2,6 +2,7 @@
 
 depend() {
 	 use dns
+	 need net
 }
 
 start() {
